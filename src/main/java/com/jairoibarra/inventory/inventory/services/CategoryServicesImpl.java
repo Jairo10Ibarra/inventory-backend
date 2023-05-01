@@ -76,5 +76,40 @@ public class CategoryServicesImpl implements InterfaceCategoryService {
         return new ResponseEntity<CategoryResponseRest>(categoryResponseRest, HttpStatus.OK);
     }
 
+    @Override
+    @Transactional()
+    public ResponseEntity<CategoryResponseRest> save(Category category) {
+
+        CategoryResponseRest categoryResponseRest = new CategoryResponseRest();
+        List<Category> listaCategorias = new ArrayList<>();
+
+        try {
+
+        Category categorySaved = interfaceCategoryDao.save(category);
+
+        if (categorySaved != null){
+
+            categoryResponseRest.setMetadata("Respuesta OK", "00", "CATEGORIA GUARDADA CON EXITO");
+            listaCategorias.add(categorySaved);
+            categoryResponseRest.getCategoryResponse().setCategory(listaCategorias);
+
+        } else {
+
+            categoryResponseRest.setMetadata("Respuesta FAIL", "-1", "CATEGORIA NO GUARDADA");
+            return new ResponseEntity<CategoryResponseRest>(categoryResponseRest, HttpStatus.BAD_REQUEST);
+
+        }
+
+        } catch (Exception e) {
+
+            categoryResponseRest.setMetadata("Respuesta FAIL", "-1", "ERROR AL GUARDAR CATEGORIA");
+            e.getStackTrace();
+            return new ResponseEntity<CategoryResponseRest>(categoryResponseRest, HttpStatus.INTERNAL_SERVER_ERROR);
+
+        }
+
+        return new ResponseEntity<CategoryResponseRest>(categoryResponseRest, HttpStatus.OK);
+    }
+
 
 }
