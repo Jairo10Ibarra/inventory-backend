@@ -9,7 +9,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CategoryServicesImpl implements InterfaceCategoryService {
@@ -26,22 +28,53 @@ public class CategoryServicesImpl implements InterfaceCategoryService {
         try {
 
             List<Category> category = (List<Category>) interfaceCategoryDao.findAll();
-
-            categoryResponseRest.setMetadata("Respuesta OK" , "00" , "RESPUESTA EXITOSA");
-
+            categoryResponseRest.setMetadata("Respuesta OK", "00", "RESPUESTA EXITOSA");
             categoryResponseRest.getCategoryResponse().setCategory(category);
-
 
         } catch (Exception e) {
 
-            categoryResponseRest.setMetadata("Respuesta FAIL" , "-1" , "ERROR AL CONSULTAR CATEGORYS");
+            categoryResponseRest.setMetadata("Respuesta FAIL", "-1", "ERROR AL CONSULTAR CATEGORYS");
             e.getStackTrace();
-            return new ResponseEntity<CategoryResponseRest>(categoryResponseRest , HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<CategoryResponseRest>(categoryResponseRest, HttpStatus.INTERNAL_SERVER_ERROR);
 
         }
 
-        return new ResponseEntity<CategoryResponseRest>(categoryResponseRest , HttpStatus.OK);
+        return new ResponseEntity<CategoryResponseRest>(categoryResponseRest, HttpStatus.OK);
 
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ResponseEntity<CategoryResponseRest> searchById(Long id) {
+
+        CategoryResponseRest categoryResponseRest = new CategoryResponseRest();
+        List<Category> listaCategorias = new ArrayList<>();
+
+        try {
+
+            Optional<Category> category = interfaceCategoryDao.findById(id);
+
+            if (category.isPresent()) {
+
+                categoryResponseRest.setMetadata("Respuesta OK", "00", "CATEGORIA ENCONTRADA");
+                listaCategorias.add(category.get());
+                categoryResponseRest.getCategoryResponse().setCategory(listaCategorias);
+
+            } else {
+                categoryResponseRest.setMetadata("Respuesta FAIL", "-1", "CATEGORIA NO ENCONTRADA");
+                return new ResponseEntity<CategoryResponseRest>(categoryResponseRest, HttpStatus.NOT_FOUND);
+            }
+
+        } catch (Exception e) {
+
+            categoryResponseRest.setMetadata("Respuesta FAIL", "-1", "ERROR AL CONSULTAR CATEGORIAS POR ID");
+            e.getStackTrace();
+            return new ResponseEntity<CategoryResponseRest>(categoryResponseRest, HttpStatus.INTERNAL_SERVER_ERROR);
+
+        }
+
+        return new ResponseEntity<CategoryResponseRest>(categoryResponseRest, HttpStatus.OK);
+    }
+
 
 }
